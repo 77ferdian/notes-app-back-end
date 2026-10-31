@@ -29,7 +29,7 @@ const addNoteHandler = (request, h) => {
     });
     response.code(201);
     return response;
-  } catch (error) {
+  } catch {
     const response = h.response({
       status: 'error',
       message: 'Catatan gagal untuk ditambahkan',
