@@ -3,7 +3,11 @@ import { nanoid } from 'nanoid';
 
 class NoteRepositories {
   constructor() {
-    this.pool = new Pool();
+    const poolConfig = {};
+    if (process.env.NODE_ENV === 'production') {
+      poolConfig.ssl = { rejectUnauthorized: false };
+    }
+    this.pool = new Pool(poolConfig);
   }
 
   async createNote({ title, body, tags }) {
