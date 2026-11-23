@@ -1,34 +1,21 @@
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
-import UserRepositories from '../../users/repositories/user-repositories.js';
 import AuthenticationRepositories from '../repositories/authentication-repositories.js';
-import { AuthenticationError, InvariantError } from '../../../exceptions/index.js';
+import UserRepositories from '../../users/repositories/user-repositories.js';
+import TokenManager from '../../../security/token-manager.js';
 import response from '../../../utils/response.js';
+import InvariantError from '../../../exceptions/invariant-error.js';
+import AuthenticationError from '../../../exceptions/authentication-error.js';
 
 export const login = async (req, res, next) => {
   try {
     const { username, password } = req.validated;
+    const userId = await UserRepositories.verifyUserCredential(username, password);
 
-    const user = await UserRepositories.getUserByUsername(username);
-    if (!user) {
+    if (!userId) {
       return next(new AuthenticationError('Kredensial yang Anda berikan salah'));
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return next(new AuthenticationError('Kredensial yang Anda berikan salah'));
-    }
-
-    const accessToken = jwt.sign(
-      { userId: user.id },
-      process.env.ACCESS_TOKEN_KEY,
-      { expiresIn: '15m' },
-    );
-
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      process.env.REFRESH_TOKEN_KEY,
-    );
+    const accessToken = TokenManager.generateAccessToken({ id: userId });
+    const refreshToken = TokenManager.generateRefreshToken({ id: userId });
 
     await AuthenticationRepositories.addRefreshToken(refreshToken);
 
@@ -36,8 +23,8 @@ export const login = async (req, res, next) => {
       accessToken,
       refreshToken,
     });
-  } catch (err) {
-    return next(err);
+  } catch (error) {
+    return next(error);
   }
 };
 
@@ -45,27 +32,18 @@ export const refreshToken = async (req, res, next) => {
   try {
     const { refreshToken: token } = req.validated;
 
-    const isTokenValid = await AuthenticationRepositories.verifyRefreshToken(token);
-    if (!isTokenValid) {
+    const result = await AuthenticationRepositories.verifyRefreshToken(token);
+
+    if (!result) {
       return next(new InvariantError('Refresh token tidak valid'));
     }
 
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.REFRESH_TOKEN_KEY);
-    } catch {
-      return next(new InvariantError('Refresh token tidak valid'));
-    }
-
-    const accessToken = jwt.sign(
-      { userId: decoded.userId },
-      process.env.ACCESS_TOKEN_KEY,
-      { expiresIn: '15m' },
-    );
+    const { id } = TokenManager.verifyRefreshToken(token);
+    const accessToken = TokenManager.generateAccessToken({ id });
 
     return response(res, 200, 'Access Token berhasil diperbarui', { accessToken });
-  } catch (err) {
-    return next(err);
+  } catch (error) {
+    return next(error);
   }
 };
 
@@ -73,15 +51,16 @@ export const logout = async (req, res, next) => {
   try {
     const { refreshToken: token } = req.validated;
 
-    const isTokenValid = await AuthenticationRepositories.verifyRefreshToken(token);
-    if (!isTokenValid) {
+    const result = await AuthenticationRepositories.verifyRefreshToken(token);
+
+    if (!result) {
       return next(new InvariantError('Refresh token tidak valid'));
     }
 
     await AuthenticationRepositories.deleteRefreshToken(token);
 
-    return response(res, 200, 'Refresh token berhasil dihapus', null);
-  } catch (err) {
-    return next(err);
+    return response(res, 200, 'Refresh token berhasil dihapus');
+  } catch (error) {
+    return next(error);
   }
 };
