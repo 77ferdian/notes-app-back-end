@@ -10,9 +10,7 @@ class NoteRepositories {
     this.pool = new Pool(poolConfig);
   }
 
-  async createNote({
-    title, body, tags, owner,
-  }) {
+  async createNote({ title, body, tags, owner }) {
     const id = nanoid(16);
     const createdAt = new Date().toISOString();
     const updatedAt = createdAt;
@@ -23,6 +21,7 @@ class NoteRepositories {
     };
 
     const result = await this.pool.query(query);
+
     return result.rows[0];
   }
 
@@ -33,6 +32,7 @@ class NoteRepositories {
     };
 
     const result = await this.pool.query(query);
+
     return result.rows;
   }
 
@@ -43,12 +43,11 @@ class NoteRepositories {
     };
 
     const result = await this.pool.query(query);
+
     return result.rows[0];
   }
 
-  async editNote({
-    id, title, body, tags,
-  }) {
+  async editNote({ id, title, body, tags }) {
     const updatedAt = new Date().toISOString();
 
     const query = {
@@ -57,6 +56,7 @@ class NoteRepositories {
     };
 
     const result = await this.pool.query(query);
+
     return result.rows[0];
   }
 

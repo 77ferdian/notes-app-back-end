@@ -6,7 +6,7 @@ class AuthenticationRepositories {
     if (process.env.NODE_ENV === 'production') {
       poolConfig.ssl = { rejectUnauthorized: false };
     }
-    this.pool = new Pool(poolConfig);
+    this._pool = new Pool(poolConfig);
   }
 
   async addRefreshToken(token) {
@@ -15,16 +15,7 @@ class AuthenticationRepositories {
       values: [token],
     };
 
-    await this.pool.query(query);
-  }
-
-  async deleteRefreshToken(token) {
-    const query = {
-      text: 'DELETE FROM authentications WHERE token = $1',
-      values: [token],
-    };
-
-    await this.pool.query(query);
+    await this._pool.query(query);
   }
 
   async verifyRefreshToken(token) {
@@ -33,12 +24,21 @@ class AuthenticationRepositories {
       values: [token],
     };
 
-    const result = await this.pool.query(query);
+    const result = await this._pool.query(query);
     if (!result.rows.length) {
       return false;
     }
 
     return result.rows[0];
+  }
+
+  async deleteRefreshToken(token) {
+    const query = {
+      text: 'DELETE FROM authentications WHERE token = $1',
+      values: [token],
+    };
+
+    await this._pool.query(query);
   }
 }
 

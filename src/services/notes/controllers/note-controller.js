@@ -12,7 +12,7 @@ export const createNote = async (req, res, next) => {
     title,
     body,
     tags,
-    owner,
+    owner
   });
 
   if (!note) {
@@ -27,8 +27,6 @@ export const getNotes = async (req, res) => {
   const notes = await NoteRepositories.getNotes(owner);
   return response(res, 200, 'Catatan sukses ditampilkan', notes);
 };
-
-export const getAllNotes = getNotes;
 
 export const getNoteById = async (req, res, next) => {
   const { id } = req.params;
@@ -49,9 +47,14 @@ export const getNoteById = async (req, res, next) => {
   return response(res, 200, 'Catatan sukses ditampilkan', note);
 };
 
-export const editNoteById = async (req, res, next) => {
+export const editNote = async (req, res, next) => {
   const { id } = req.params;
-  const { title, body, tags } = req.validated;
+  const {
+    title,
+    body,
+    tags
+  } = req.validated;
+
   const { id: owner } = req.user;
 
   const isOwner = await NoteRepositories.verifyNoteOwner(id, owner);
@@ -64,7 +67,7 @@ export const editNoteById = async (req, res, next) => {
     id,
     title,
     body,
-    tags,
+    tags
   });
 
   if (!note) {
@@ -74,9 +77,7 @@ export const editNoteById = async (req, res, next) => {
   return response(res, 200, 'Catatan berhasil diperbarui', note);
 };
 
-export const editNote = editNoteById;
-
-export const deleteNoteById = async (req, res, next) => {
+export const deleteNote = async (req, res, next) => {
   const { id } = req.params;
   const { id: owner } = req.user;
 
@@ -94,5 +95,3 @@ export const deleteNoteById = async (req, res, next) => {
 
   return response(res, 200, 'Catatan berhasil dihapus', deletedNote);
 };
-
-export const deleteNote = deleteNoteById;

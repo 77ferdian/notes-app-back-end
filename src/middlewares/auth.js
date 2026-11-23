@@ -14,6 +14,6 @@ async function authenticateToken(req, res, next) {
   }
 
   return response(res, 401, 'Unauthorized', null);
-}
+};
 
 export default authenticateToken;
