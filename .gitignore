@@ -3,3 +3,4 @@ node_modules/
 .prod.env
 *.log
 *.pem
+log-aws/

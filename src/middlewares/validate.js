@@ -22,5 +22,5 @@ const validateQuery = (schema) => (req, res, next) => {
   next();
 };
 
-export { validateQuery };
+export { validate, validateQuery };
 export default validate;
