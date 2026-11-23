@@ -45,6 +45,16 @@ class UserRepositories {
     const result = await this._pool.query(query);
     return result.rows[0];
   }
+
+  async getUserByUsername(username) {
+    const query = {
+      text: 'SELECT id, username, password FROM users WHERE username = $1',
+      values: [username],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows[0];
+  }
 }
 
 export default new UserRepositories();
