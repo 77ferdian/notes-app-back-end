@@ -32,7 +32,7 @@ export const getNoteById = async (req, res, next) => {
   const { id } = req.params;
   const { id: owner } = req.user;
 
-  const isOwner = await NoteRepositories.verifyNoteOwner(id, owner);
+  const isOwner = await NoteRepositories.verifyNoteAccess(id, owner);
 
   if (!isOwner) {
     return next(new AuthorizationError('Anda tidak berhak mengakses resource ini'));
@@ -52,12 +52,12 @@ export const editNote = async (req, res, next) => {
   const {
     title,
     body,
-    tags
+    tags,
   } = req.validated;
 
   const { id: owner } = req.user;
 
-  const isOwner = await NoteRepositories.verifyNoteOwner(id, owner);
+  const isOwner = await NoteRepositories.verifyNoteAccess(id, owner);
 
   if (!isOwner) {
     return next(new AuthorizationError('Anda tidak berhak mengakses resource ini'));
@@ -67,7 +67,7 @@ export const editNote = async (req, res, next) => {
     id,
     title,
     body,
-    tags
+    tags,
   });
 
   if (!note) {
